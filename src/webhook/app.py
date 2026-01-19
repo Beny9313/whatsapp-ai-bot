@@ -1,12 +1,18 @@
 """
 Flask webhook for WhatsApp messages via Twilio.
-Day 1: Basic webhook that logs messages and sends mock responses.
+Day 2: Integrated with LangGraph agent for real SAP CX responses.
 """
 
 import os
+import sys
 from flask import Flask, request, Response
 from dotenv import load_dotenv
 import logging
+
+# Add src to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
+
+from src.agents.sap_agent import run_agent
 
 load_dotenv()
 
@@ -22,13 +28,13 @@ logger = logging.getLogger(__name__)
 @app.route("/", methods=["GET"])
 def health_check():
     """Health check endpoint"""
-    return {"status": "ok", "service": "SAP CX WhatsApp Agent"}, 200
+    return {"status": "ok", "service": "SAP CX WhatsApp Agent", "version": "Day 2 - LangGraph"}, 200
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
     """
     Twilio webhook endpoint.
-    Receives WhatsApp messages and processes them.
+    Receives WhatsApp messages and processes them with LangGraph agent.
     """
     try:
         # Get incoming message data
@@ -36,13 +42,26 @@ def webhook():
         from_number = request.values.get('From', '')
         to_number = request.values.get('To', '')
         
-        logger.info(f"📱 Received message from {from_number}: {incoming_msg}")
+        logger.info(f"📱 Received from {from_number}: {incoming_msg}")
         
-        # For Day 1: Simple mock response
-        # Days 2-4: This will call the actual agent
-        response_text = mock_agent_response(incoming_msg)
+        # Run the LangGraph agent (Day 2 - REAL AGENT!)
+        agent_result = run_agent(
+            query=incoming_msg,
+            user_id=from_number  # Use WhatsApp number as user ID
+        )
         
-        logger.info(f"🤖 Sending response: {response_text}")
+        # Extract answer
+        response_text = agent_result.get('answer', 'Sorry, I could not process your request.')
+        
+        # Log agent metadata
+        logger.info(f"🤖 Agent classified as: {agent_result.get('primary_domain')} "
+                   f"(confidence: {agent_result.get('confidence')})")
+        logger.info(f"💬 Sending response ({len(response_text)} chars)")
+        
+        # Handle errors
+        if agent_result.get('error'):
+            logger.error(f"❌ Agent error: {agent_result['error']}")
+            response_text = "Sorry, I encountered an error. Please try rephrasing your question."
         
         # Twilio expects TwiML response
         twiml_response = f"""<?xml version="1.0" encoding="UTF-8"?>
@@ -53,30 +72,15 @@ def webhook():
         return Response(twiml_response, mimetype='text/xml')
         
     except Exception as e:
-        logger.error(f"❌ Error processing webhook: {e}")
+        logger.error(f"❌ Webhook error: {e}", exc_info=True)
         error_response = """<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Message>Sorry, I encountered an error. Please try again.</Message>
+    <Message>Sorry, I encountered a technical error. Please try again later.</Message>
 </Response>"""
         return Response(error_response, mimetype='text/xml'), 500
 
-def mock_agent_response(message: str) -> str:
-    """
-    Mock agent for Day 1 testing.
-    Replace with real agent on Day 2.
-    """
-    message_lower = message.lower()
-    
-    # Simple keyword matching for testing
-    if "service cloud" in message_lower or "ticket" in message_lower:
-        return "🎯 I detected a Service Cloud question! (This is a test response - real agent coming on Day 2)"
-    elif "fsm" in message_lower or "field service" in message_lower:
-        return "🎯 I detected an FSM question! (This is a test response - real agent coming on Day 2)"
-    elif "cpi" in message_lower or "integration" in message_lower:
-        return "🎯 I detected a CPI question! (This is a test response - real agent coming on Day 2)"
-    else:
-        return f"👋 Hi! I'm your SAP CX assistant. You asked: '{message}' (Test mode - Day 1)"
-
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
+    logger.info(f"🚀 Starting SAP CX Agent (Day 2 - LangGraph)")
+    logger.info(f"📍 Listening on port {port}")
     app.run(host="0.0.0.0", port=port, debug=True)
