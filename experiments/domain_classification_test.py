@@ -1,15 +1,15 @@
 """
-Test domain classification accuracy using Claude.
+Test domain classification accuracy using Groq.
 """
 
 import os
 from dotenv import load_dotenv
-from anthropic import Anthropic
+from groq import Groq
 import json
 
 load_dotenv()
-client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-MODEL = os.getenv("DEFAULT_MODEL", "claude-3-5-sonnet-20241022")
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+MODEL = os.getenv("DEFAULT_MODEL", "llama-3.3-70b-versatile")
 
 TEST_CASES = [
     {
@@ -51,7 +51,7 @@ Available domains:
 
 Classify user queries into these domains.
 
-Output ONLY valid JSON (no explanation) with this structure:
+Output ONLY valid JSON with this structure:
 {
   "primary_domain": "most relevant domain",
   "secondary_domains": ["other involved domains"],
@@ -60,24 +60,18 @@ Output ONLY valid JSON (no explanation) with this structure:
   "reasoning": "brief explanation"
 }"""
 
-    message = client.messages.create(
+    response = client.chat.completions.create(
         model=MODEL,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Classify this query: {query}"}
+        ],
+        temperature=0.1,
         max_tokens=512,
-        system=system_prompt,
-        messages=[{
-            "role": "user",
-            "content": f"Classify this query: {query}"
-        }]
+        response_format={"type": "json_object"}
     )
     
-    response_text = message.content[0].text
-    
-    # Extract JSON (Claude sometimes wraps in markdown)
-    if "```json" in response_text:
-        response_text = response_text.split("```json")[1].split("```")[0].strip()
-    elif "```" in response_text:
-        response_text = response_text.split("```")[1].split("```")[0].strip()
-    
+    response_text = response.choices[0].message.content
     return json.loads(response_text)
 
 def test_classification():
@@ -134,7 +128,7 @@ def test_classification():
     return results, accuracy
 
 if __name__ == "__main__":
-    print(f"🤖 Using Claude: {MODEL}\n")
+    print(f"🤖 Using Groq: {MODEL}\n")
     results, accuracy = test_classification()
     
     if accuracy < 90:

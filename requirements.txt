@@ -1,11 +1,13 @@
-# Core AI - Claude & Groq
-anthropic>=0.18.0
+# Core AI - Groq (Free tier)
 groq>=0.4.0
 
-# LangChain (supports both)
+# Future: Claude API
+anthropic>=0.18.0
+
+# LangChain
 langchain>=0.1.0
 langgraph>=0.0.20
-langchain-anthropic>=0.1.0
+langchain-groq>=0.0.1
 
 # Vector DB & RAG
 chromadb>=0.4.22
