@@ -29,6 +29,7 @@ Thumbs.db
 *.sqlite3
 .chroma/
 vector_store/
+docs/*
 
 # Logs
 *.log
