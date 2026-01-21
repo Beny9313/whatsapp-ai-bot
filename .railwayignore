@@ -1,9 +1,19 @@
+# Don't upload vector store (rebuild on Railway)
 vector_store/
+
+# Don't upload docs initially (too large)
+docs/
+
+# Python
 __pycache__/
 *.pyc
 .env
 venv/
-.git/
+
+# Development files
 experiments/
 tests/
-scripts/
+scripts/test_*.py
+
+# Git
+.git/

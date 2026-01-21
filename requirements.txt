@@ -1,35 +1,30 @@
-# Core AI - Groq (Free tier)
-groq>=0.4.0
-
-# Future: Claude API
-anthropic>=0.18.0
+# Core AI - Groq & OpenAI (API-based, no heavy models)
+groq>=0.37.1
+openai>=1.0.0
 
 # LangChain
-langchain>=0.1.0
-langgraph>=0.0.20
-langchain-groq>=0.0.1
+langchain>=1.2.6
+langgraph>=1.0.6
+langchain-groq>=1.1.1
+langchain-core>=1.2.7
 
-# Vector DB & RAG
+# Vector DB (lightweight)
 chromadb>=0.4.22
-sentence-transformers>=2.3.1
+langchain-chroma>=0.2.3
 
 # WhatsApp Integration
-flask>=3.0.0
-twilio>=8.11.0
+flask>=3.1.2
+twilio>=9.9.1
+gunicorn>=23.0.0
 
 # Utilities
-python-dotenv>=1.0.0
-requests>=2.31.0
-pydantic>=2.5.0
-
-# Testing
-pytest>=7.4.0
-pytest-asyncio>=0.21.0
-
-# RAG - Lightweight (no heavy ML models)
-chromadb==0.4.22
-langchain-chroma>=0.1.0
+python-dotenv>=1.2.1
+requests>=2.32.5
+pydantic>=2.12.5
 
 # PDF Support
-pypdf>=3.17.0
-gunicorn>=21.2.0
+pypdf>=6.6.0
+
+# Testing (optional - remove for production)
+# pytest>=9.0.2
+# pytest-asyncio>=1.3.0
