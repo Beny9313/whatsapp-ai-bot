@@ -1,0 +1,9 @@
+vector_store/
+__pycache__/
+*.pyc
+.env
+venv/
+.git/
+experiments/
+tests/
+scripts/

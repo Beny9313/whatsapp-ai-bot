@@ -32,3 +32,4 @@ langchain-chroma>=0.1.0
 
 # PDF Support
 pypdf>=3.17.0
+gunicorn>=21.2.0
